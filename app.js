@@ -10,9 +10,12 @@ const server = http.createServer(app);
 const io = require('socket.io')(server);
 
 io.on('connection', function(socket){
-  console.log('a user connected');
   socket.on('message', (data)=>{
   	socket.broadcast.send(data);
+  });
+
+  socket.on('drawing', (data)=>{
+  	socket.broadcast.emit('draw_remote',data);
   })
 });
 

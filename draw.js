@@ -3,6 +3,11 @@
 class Draw {
 	constructor (opts) {
 		this._whiteboard = opts.whiteboard;
+		this._size = {
+			width: this._whiteboard.width,
+			height: this._whiteboard.height
+		}
+		this._socket = opts.socket;
 		this._isDrawing = false;
 	}
 
@@ -10,15 +15,27 @@ class Draw {
 		// Checking for support
 		this._ctx = this._whiteboard.getContext('2d');
 		this.bindEvents();
+		this.bindSocketEvents();
 	}
 
-	drawline () {
+	drawline (coords, isRemote) {
 		this._ctx.beginPath();
-		this._ctx.moveTo(this._startCoordX, this._startCoordY);
-		this._ctx.lineTo(this._endCoordX, this._endCoordY);
+		this._ctx.moveTo(coords.sx, coords.sy);
+		this._ctx.lineTo(coords.ex, coords.ey);
 		this._ctx.strokeStyle = 'green';
 		this._ctx.stroke();
         this._ctx.closePath();
+
+    	if(isRemote) return;
+
+    	// 发送本地数据
+        let newCoords = {
+        	sx: coords.sx / this._size.width,
+        	sy: coords.sy / this._size.height,
+        	ex: coords.ex / this._size.width,
+        	ey: coords.ey / this._size.height
+        }
+        this._socket.emit('drawing',newCoords);
 	}
 
 	bindEvents () { 
@@ -27,6 +44,21 @@ class Draw {
 		this._whiteboard.addEventListener('mouseup', function(e) {self.onMouseup(e);});
 		this._whiteboard.addEventListener('mouseout', function(e) {self.onMouseout(e);});
 		this._whiteboard.addEventListener('mousemove', function(e) {self.onMousemove(e);});
+	}
+
+	bindSocketEvents () {
+		let socket = this._socket;
+		let self = this;
+
+		this._socket.on('draw_remote',function(data) {
+			let coords = {
+	        	sx: data.sx * self._size.width,
+	        	sy: data.sy * self._size.height,
+	        	ex: data.ex * self._size.width,
+	        	ey: data.ey * self._size.height
+        	}
+			self.drawline(coords,true);
+		})
 	}
 
 	onMousedown (e) {
@@ -39,10 +71,14 @@ class Draw {
 	onMouseup (e) {
 		// 获取结束画线坐标
 		this._isDrawing = false;
-		this._endCoordX = e.clientX;
-		this._endCoordY = e.clientY;
+		let coords = {
+	        	sx: this._startCoordX,
+	        	sy: this._startCoordY,
+	        	ex: e.clientX,
+	        	ey: e.clientY
+	        }
 		// 画线
-		this.drawline();
+		this.drawline(coords);
 	}
 
 
@@ -54,12 +90,17 @@ class Draw {
 	onMousemove (e) {
 		if(!this._isDrawing) return;
 		// 获取移动至某点的坐标
-		this._endCoordX = e.clientX;
-		this._endCoordY = e.clientY;
+		let coords = {
+	        	sx: this._startCoordX,
+	        	sy: this._startCoordY,
+	        	ex: e.clientX,
+	        	ey: e.clientY
+	        }
+
 		// 画线
-		this.drawline();
+		this.drawline(coords);
 		// 本次结束的点为下一次移动的起点
-		this._startCoordX = this._endCoordX;
-		this._startCoordY = this._endCoordY;
+		this._startCoordX = e.clientX;
+		this._startCoordY = e.clientY;
 	}
 }

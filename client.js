@@ -1,32 +1,32 @@
 'use strict';
 
 (function() {
-	const ws = io("ws://localhost:3000");
+	const socket = io("ws://localhost:3000");
 	const $input = document.getElementById('input');
 	const $submit = document.getElementById('submit');
 	const $messages = document.getElementById('messages');
 
-	ws.on('connect', function() { 
+	socket.on('connect', function() { 
 
 		console.log("Connection open ..."); 
 		let info = 'Connection opened.';
 		createMessage(info,true);
-		ws.send("Remote User Connected.");
+		socket.send("Remote User Connected.");
 	}
 	);
 
-	ws.on('message',function(data) {
+	socket.on('message',function(data) {
 		createMessage(data)
 	});
 
-	ws.on('close',function() {
+	socket.on('close',function() {
 		console.log("Connection closed.");
 	});       
 
 	$submit.addEventListener('click', function(){
 		let msg = $input.value;
 		if(msg.length){
-			ws.send(msg);
+			socket.send(msg);
 			$input.value = "";
 			createMessage(msg,true)
 		} 
