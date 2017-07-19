@@ -47,6 +47,7 @@ class Draw {
 	}
 
 	bindSocketEvents () {
+		// 接收广播
 		let socket = this._socket;
 		let self = this;
 
@@ -63,14 +64,16 @@ class Draw {
 
 	onMousedown (e) {
 		// 获取开始画线坐标
-		this._isDrawing = true;
-		this._startCoordX = e.clientX;
-		this._startCoordY = e.clientY;
+		if(e.which === 1 )  {   // 区别鼠标右键点击事件
+			this._isDrawing = true;
+			this._startCoordX = e.clientX;
+			this._startCoordY = e.clientY;
+		}
 	}
 
 	onMouseup (e) {
+		if(!this._isDrawing) return;
 		// 获取结束画线坐标
-		this._isDrawing = false;
 		let coords = {
 	        	sx: this._startCoordX,
 	        	sy: this._startCoordY,
@@ -79,6 +82,7 @@ class Draw {
 	        }
 		// 画线
 		this.drawline(coords);
+		this._isDrawing = false;
 	}
 
 
