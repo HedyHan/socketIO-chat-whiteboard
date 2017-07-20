@@ -1,42 +1,42 @@
 'use strict';
 
-(function() {
-	const socket = io("ws://localhost:3000");
-	const $input = document.getElementById('input');
-	const $submit = document.getElementById('submit');
-	const $messages = document.getElementById('messages');
 
-	socket.on('connect', function() { 
+const socket = io("ws://localhost:3000");
+const $input = document.getElementById('input');
+const $submit = document.getElementById('submit');
+const $messages = document.getElementById('messages');
 
-		console.log("Connection open ..."); 
-		let info = 'Connection opened.';
-		createMessage(info,true);
-		socket.send("Remote User Connected.");
-	}
-	);
+socket.on('connect', function () {
 
-	socket.on('message',function(data) {
-		createMessage(data)
-	});
+        console.log("Connection open ...");
+        let info = 'Connection opened.';
+        createMessage(info, true);
+        socket.send("Remote User Connected.");
+    }
+);
 
-	socket.on('close',function() {
-		console.log("Connection closed.");
-	});       
+socket.on('message', function (data) {
+    createMessage(data)
+});
 
-	$submit.addEventListener('click', function(){
-		let msg = $input.value;
-		if(msg.length){
-			socket.send(msg);
-			$input.value = "";
-			createMessage(msg,true)
-		} 
-	})
+socket.on('close', function () {
+    console.log("Connection closed.");
+});
 
-	function createMessage(msg,isLocalUser) {
-		let line = document.createElement("li");
-		line.innerHTML = (isLocalUser)? 'Local: ' + msg :'Remote: ' + msg;
-		$messages.appendChild(line);
-	}
+$submit.addEventListener('click', function () {
+    let msg = $input.value;
+    if (msg.length) {
+        socket.send(msg);
+        $input.value = "";
+        createMessage(msg, true)
+    }
+});
 
-})
+function createMessage(msg, isLocalUser) {
+    let line = document.createElement("li");
+    line.innerHTML = (isLocalUser) ? 'Local: ' + msg : 'Remote: ' + msg;
+    $messages.appendChild(line);
+}
+
+
 
